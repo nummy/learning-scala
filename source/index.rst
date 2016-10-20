@@ -12,8 +12,8 @@ Contents:
    :maxdepth: 2
    :glob:
 
-   chapter/*
-   *
+   chapter/chapter01
+   chapter/chapter02
 
 
 
