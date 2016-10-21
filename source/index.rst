@@ -12,9 +12,7 @@ Contents:
    :maxdepth: 2
    :glob:
 
-   chapter/chapter01
-   chapter/chapter02
-
+   chapter/*
 
 
 Indices and tables

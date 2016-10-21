@@ -49,7 +49,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'scala reference'
+project = u'Scala 学习笔记'
 copyright = u'2016, nummy'
 author = u'nummy'
 
