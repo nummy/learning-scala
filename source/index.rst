@@ -20,7 +20,13 @@ Contents:
    chapter/chapter06
    chapter/chapter07
    chapter/chapter08
-
+   chapter/chapter09
+   chapter/chapter10
+   chapter/chapter11
+   chapter/chapter12
+   chapter/chapter13
+   chapter/chapter14
+   chapter/chapter15
 
 
 
