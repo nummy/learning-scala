@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# scala reference documentation build configuration file, created by
+# learning scala build configuration file, created by
 # sphinx-quickstart on Thu Oct 20 20:36:14 2016.
 #
 # This file is execfile()d with the current directory set to its
@@ -260,7 +260,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'scalareference.tex', u'scala reference Documentation',
+    (master_doc, 'scalareference.tex', u'learning scala',
      u'nummy', 'manual'),
 ]
 
@@ -302,7 +302,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'scalareference', u'scala reference Documentation',
+    (master_doc, 'scalareference', u'learning scala',
      [author], 1)
 ]
 
@@ -317,7 +317,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'scalareference', u'scala reference Documentation',
+    (master_doc, 'scalareference', u'learning scala',
      author, 'scalareference', 'One line description of project.',
      'Miscellaneous'),
 ]
