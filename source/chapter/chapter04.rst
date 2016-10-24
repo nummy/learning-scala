@@ -1,6 +1,6 @@
-=================
-第四章 映射和元组
-=================
+=======================
+第四章 映射、选项以及元组
+=======================
 
 ---------
 构造映射
@@ -22,9 +22,9 @@
 
 使用 ``->`` 来创建对偶。
 
-------------
-获取映射的值
-------------
+
+**获取映射的值**
+
 
 在scala中使用 ``()`` 表示法来查找某个键对应的值。
 
@@ -38,9 +38,9 @@
 
 除此之外，我们还可以使用 ``getOrElse()`` 方法。
 
---------------
-更新映射中的值
---------------
+
+**更新映射中的值**
+
 
 
 在可变映射中，可以更新映射值，做法是在=的左侧使用()。
@@ -58,9 +58,8 @@
 
 使用 ``-=`` 移除某个键和对应的值。
 
----------
-迭代映射
----------
+
+**迭代映射**
 
 使用for循环遍历映射中所有的键：
 
@@ -68,32 +67,57 @@
 	
 	for( (k, v) <- map)
 
--------------
-访问键或者值
--------------
+**访问键或者值**
+
 
 .. code-block:: scala
 	
 	scores.keySet
 	scores.values
 
---------
-反转映射
---------
+**反转映射**
 
 .. code-block:: scala
 	
 	for( (k, v) <- map) yield (v, k)
 
------------
-已排序映射
------------
+**已排序映射**
+
 
 .. code-block:: scala
 
 	val scores = scala.collections.immutable.SortedMap("A"->1, "B"->2)
 
 如果需要按插入顺序访问所有键的话，使用 ``LinkedHashMap`` 。
+
+----
+选项
+----
+
+``Option`` 是一个表示有可能包含值的容器。
+
+``Option`` 基本的接口是这样的：
+
+.. code-block:: scala
+
+	trait Option[T] {
+	  def isDefined: Boolean
+ 	  def get: T
+ 	  def getOrElse(t: T): T
+	}
+
+``Option`` 本身是泛型的，并且有两个子类： ``Some[T]``  或  ``None``
+
+``Map.get`` 使用 ``Option`` 作为其返回值，表示这个方法也许不会返回你请求的值。
+
+模式匹配能自然地配合 ``Option`` 使用。
+
+.. code-block:: scala
+
+	val result = res1 match {
+	  case Some(n) => n * 2
+	  case None => 0
+	}
 
 -----
 元组
@@ -126,24 +150,90 @@
 	
 	val (first, second, _) =  t
 
-----------
-拉链操作
-----------
+------------
+常用集合操作
+------------
 
-使用元组的原因之一是多个值绑定在一起，以便它们能够一起被处理，这通常可以用 ``zip()`` 方法实现。
++++
+Map
++++
+
+``map`` 对列表中的每个元素应用一个函数，返回应用后的元素所组成的列表。
 
 .. code-block:: scala
+
+	scala> numbers.map((i: Int) => i * 2)
+	res0: List[Int] = List(2, 4, 6, 8)
+
+或者传入一个函数：
+
+.. code-block:: scala
+
+	scala> def timesTwo(i: Int): Int = i * 2
+	timesTwo: (i: Int)Int
+
+	scala> numbers.map(timesTwo _)
+	res0: List[Int] = List(2, 4, 6, 8)
+
++++++++
+foreach
++++++++
+
+``foreach`` 很像 ``map`` ，但没有返回值。 ``foreach`` 仅用于有副作用的函数。
+
+.. code-block:: scala
+
+	scala> numbers.foreach((i: Int) => i * 2)
+
+该函数返回值为Unit类型。
+
+++++++
+filter
+++++++
+
+``filter`` 移除任何对传入函数计算结果为 ``false`` 的元素。返回一个布尔值的函数通常被称为谓词函数[或判定函数]。
+
+.. code-block:: scala
+
+	scala> numbers.filter((i: Int) => i % 2 == 0)
+	res0: List[Int] = List(2, 4)
 	
-	val symbols = Array("<","-", ">")
-	val counts = Array(2,10,2)
-	val paris = symbols.zip(counts)
+	scala> def isEven(i: Int): Boolean = i % 2 == 0
+	isEven: (i: Int)Boolean
 
+	scala> numbers.filter(isEven _)
+	res2: List[Int] = List(2, 4)
 
-输出对偶的数组：
++++
+zip
++++
+
+``zip`` 将两个列表的内容聚合到一个对偶列表中。
 
 .. code-block:: scala
 
-	Array(("<",2),("-",10),(">",2))
+	scala> List(1, 2, 3).zip(List("a", "b", "c"))
+	res0: List[(Int, String)] = List((1,a), (2,b), (3,c))
 
-使用 ``toMap()`` 可以将对偶的集合转换成映射。
++++++++++
+partition
++++++++++
 
+``partition`` 将使用给定的谓词函数分割列表。
+
+.. code-block:: scala
+
+	scala> val numbers = List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+	scala> numbers.partition(_ % 2 == 0)
+	res0: (List[Int], List[Int]) = (List(2, 4, 6, 8, 10),List(1, 3, 5, 7, 9))
+
+++++ 
+find
+++++
+
+``find`` 返回集合中第一个匹配谓词函数的元素。
+
+.. code-block:: scala
+
+	scala> numbers.find((i: Int) => i > 5)
+	res0: Option[Int] = Some(6)
