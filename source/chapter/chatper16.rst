@@ -79,3 +79,35 @@ Try 有两个子类型：
   val url = parseURL(Console.readLine("URL: ")) getOrElse new URL("http://duckduckgo.com")
 
 如果用户提供的 ``URL`` 格式不正确，我们就使用 ``DuckDuckGo`` 的 ``URL`` 作为备用。
+
+++++++++
+模式匹配
+++++++++
+
+``Success`` 和 ``Failure`` 类都是样式类，所以 ``Try`` 也支持模式匹配：
+
+.. code-block:: scala
+
+  import scala.util.Success
+  import scala.util.Failure
+  getURLContent("http://danielwestheide.com/foobar") match {
+    case Success(lines) => lines.foreach(println)
+    case Failure(ex) => println(s"Problem rendering URL content: ${ex.getMessage}")
+  }
+
+++++++++++++
+从故障中恢复
+++++++++++++
+
+如果想在失败的情况下执行某种动作，没必要去使用 ``getOrElse`` ， 一个更好的选择是 ``recover`` ，它接受一个偏函数，并返回另一个 ``Try`` 。 如果 ``recover`` 是在 ``Success`` 实例上调用的，那么就直接返回这个实例，否则就调用偏函数。 如果偏函数为给定的 ``Failure`` 定义了处理动作， ``recover`` 会返回 ``Success`` ，里面包含偏函数运行得出的结果。
+
+下面是应用了 ``recover`` 的代码：
+.. code-block:: scala
+
+  import java.net.MalformedURLException
+  import java.io.FileNotFoundException
+  val content = getURLContent("garbage") recover {
+   case e: FileNotFoundException => Iterator("Requested page does not exist")
+   case e: MalformedURLException => Iterator("Please make sure to enter a valid URL")
+   case _ => Iterator("An unexpected error has occurred. We are so sorry!")
+  }
