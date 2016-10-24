@@ -102,6 +102,7 @@ Try 有两个子类型：
 如果想在失败的情况下执行某种动作，没必要去使用 ``getOrElse`` ， 一个更好的选择是 ``recover`` ，它接受一个偏函数，并返回另一个 ``Try`` 。 如果 ``recover`` 是在 ``Success`` 实例上调用的，那么就直接返回这个实例，否则就调用偏函数。 如果偏函数为给定的 ``Failure`` 定义了处理动作， ``recover`` 会返回 ``Success`` ，里面包含偏函数运行得出的结果。
 
 下面是应用了 ``recover`` 的代码：
+
 .. code-block:: scala
 
   import java.net.MalformedURLException
