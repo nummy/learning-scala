@@ -16,7 +16,7 @@
         case _ -> sign = 0
     }
 
- ``_`` 等效于 ``default`` 。如果没有模式匹配，代码会抛出 ``MatchError`` 。
+``_`` 等效于 ``default`` 。如果没有模式匹配，代码会抛出 ``MatchError`` 。
 
 与 ``switch`` 语句不同，scala模式匹配并不会有意外掉入到下一个分支的问题。
 
