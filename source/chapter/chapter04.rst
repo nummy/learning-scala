@@ -8,6 +8,12 @@
 
 如果需要一个长度不变的数组，可以使用scala中的Array。
 
+.. code-block:: scala
+
+	var z:Array[String] = new Array[String](3)
+	or
+	var z = new Array[String](3)
+
 --------
 变长数组
 --------
@@ -94,7 +100,7 @@
 
 .. code-block:: scala
 	
-	Array(5,2,1,4).sorted(_ < _)
+	Array(5,2,1,4).sortWith(_ < _)
 
 **显示数组内容**
 
@@ -110,5 +116,28 @@
 
 .. code-block:: scala
 
-	val matrix = Array.ofDim[Double](3,4)
+	import Array._
+	
+	object Demo {
+		
+		def main(args: Array[String]) {
+			var myMatrix = ofDim[Int](3,3)
+			
+			// build a matrix
+			for (i <- 0 to 2) {
+				for ( j <- 0 to 2) {
+					myMatrix(i)(j) = j;
+				}
+			}
+			
+			// Print two dimensional array
+			for (i <- 0 to 2) {
+				for ( j <- 0 to 2) {
+					print(" " + myMatrix(i)(j));
+				}
+				println();
+			}
+		}
+	}
+
 
