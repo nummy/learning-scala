@@ -237,3 +237,61 @@ find
 
 	scala> numbers.find((i: Int) => i > 5)
 	res0: Option[Int] = Some(6)
+
+++++++++++++++++
+drop & dropWhile
+++++++++++++++++
+
+``drop`` 将删除前i个元素
+
+.. code-block:: scala
+
+	scala> numbers.drop(5)
+	res0: List[Int] = List(6, 7, 8, 9, 10)
+
+``dropWhile`` 将删除元素直到找到第一个匹配谓词函数的元素。例如，如果我们在numbers列表上使用 ``dropWhile`` 奇数的函数, 1将被丢弃（但3不会被丢弃，因为他被2“保护”了）。
+
+.. code-block:: scala
+
+	scala> numbers.dropWhile(_ % 2 != 0)
+	res0: List[Int] = List(2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+++++++++++++++++++++
+foldLeft & foldRight
+++++++++++++++++++++
+
+.. code-block:: scala
+
+	scala> numbers.foldLeft(0)((m: Int, n: Int) => m + n)
+	res0: Int = 55
+	
+0为初始值（记住numbers是 ``List[Int]`` 类型），m作为一个累加器。
+
+``foldRight`` 和 ``foldLeft`` 一样，只是运行过程相反。
+
++++++++
+flatten
++++++++
+
+``flatten`` 将嵌套结构扁平化为一个层次的集合。
+
+.. code-block:: scala
+
+	scala> List(List(1, 2), List(3, 4)).flatten
+	res0: List[Int] = List(1, 2, 3, 4)
+	
++++++++
+flatMap
++++++++
+
+``flatMap`` 是一种常用的组合子，结合映射 ``[mapping]`` 和扁平化 ``[flattening]`` 。 ``flatMap`` 需要一个处理嵌套列表的函数，然后将结果串连起来。
+
+.. code-block:: scala
+
+	scala> val nestedNumbers = List(List(1, 2), List(3, 4))
+	nestedNumbers: List[List[Int]] = List(List(1, 2), List(3, 4))
+
+	scala> nestedNumbers.flatMap(x => x.map(_ * 2))
+	res0: List[Int] = List(2, 4, 6, 8)
+	
+可以把它看做是“先映射后扁平化”的快捷操作。
