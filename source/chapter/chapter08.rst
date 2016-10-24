@@ -1,166 +1,156 @@
-===========
-第八章 继承
-===========
+================
+第八章 包和引入
+================
+
+---
+包
+---
+
+scala的包目的和Java中的包一样：管理大型程序中的名称。
+
+要增加条目到包中，可以将其包含在包语句中，例如：
+
+.. code-block:: scala
+
+    package com{
+        package horstman {
+            package patient{
+                class Employee{
+                ...
+                }
+            }
+        }
+    }
+
+这样一来，类名 ``Employee`` 就可以在任意位置以 ``com.horstman.patient.Employee`` 访问了。
+
+与对象和类的定义不同，同一个包可以定义在多个文件中。
+
+源文件的目录和包之间并没有强制的关联关系，也就是说可以在同一个文件中定义多个包。
 
 ----------
-扩展类
+作用域规则
 ----------
 
-scala扩展类的方式和Java一样，使用 ``extends`` 关键字：
+在scala中，包的作用域比Java更加前后一致，scala的包和其他作用域一样支持嵌套。可以访问上层作用域中的名称。
+
+在Java中包名是绝对的，从包层级的最顶端开始，但是在scala中，包名是相对的，就像内部类的名称一样。
+
+------------
+串联式包语句
+------------
+
+包语句可以包含一个串，或者说路径区段：
 
 .. code-block:: scala
 
-	class Employee extends Person{
-	    val salary = 0.0
-    	...
-	}
+    package com.hosrtman.patient{
+        package people{
+            class Person{
+                ...
+            }
+        }
+    }
 
+这条语句限制了可见的成员。
 
-和Java一样，你可以将类声明为 ``final`` ，这样它就不能被扩展。你可以将单个方法或者字段声明为 ``final`` ， 以确保它们不能够被重写。
+--------------
+文件顶部标识法
+--------------
 
-----------
-重写方法
-----------
-
-在scala中重写一个非抽象方法必须使用 ``override`` 修饰符。
-
-.. code-block:: scala
-
-	public class Person{
-    	...
-    	override def toString = getClass.getName + "[name=" + name + "]"
-	}
-
-``override`` 修饰符可以用在多个情况下给出有用的错误提示。包括：
-
-- 当你拼错要重写的方法名
-
-- 当你不小心在新方法中使用错误的参数类型。
-
-- 当你在超类中引入新的方法，而这个新的方法与子类的方法相抵触。
-
-在scala中调用超类的方法和Java一样，使用 ``super`` 关键字。
-
-----------------
-类型转换和检查
-----------------
-
-要检查某个对象是否属于某个特定的类，可以用 ``isInstanceOf`` 方法。如果测试成功，你就可以使用 ``asInstanceOf`` 方法将引用转换为子类的引用。
+除了使用嵌套标记法之外，还可以在文件顶部使用package语句，不带花括号。
 
 .. code-block:: scala
 
-	if (p.isInstanceOf[Employee]){
-    	val s = p.asInstanceOf[Employee]
-	}
+    package com.hosrtman.people.patient
+    package people
 
-如果 ``p`` 指向的是 ``Employee`` 类及其子类，则 ``p.isInstanceOf[Employee]`` 就会成功；
+------
+包对象
+------
 
-如果 ``p`` 是 ``null`` ， 则 ``p.isInstanceOf[Employee]`` 将返回 ``false`` ，且 ``p.asInstanceOf[Employee]`` 将返回 ``null`` 。
+包可以包含类，对象和特质，但是不能包含函数和变量的定义。
 
-如果 ``p`` 不是一个 ``Employee`` ，则 ``p.asInstanceOf[Employee]`` 将抛出异常。
-
-如果你想要测试 ``p`` 指向的是一个 ``Employee`` 对象但又不是其子类的话，可以使用：
-
-.. code-block:: scala
-	
-	if (p.getClass == classOf[Employee])
-
-不过与类型检查和转化相比，模式匹配通常是更好的选择。
-
-.. code-block:: scala
-	
-	p match{
-    	case s:Employee => ...
-    	case _ =>...
-	}
-
-
-
--------------
-受保护字段
--------------
-
-如果字段或方法被声明为 	``protected`` ，则这样的成员可以被任何子类访问，但不能从其他位置看到。与Java不同的是，``protected`` 的成员对于类所属的包而言，是不可见的。
-
----------------
-超类的构造
----------------
-
-辅助构造器永远不能够直接调用超类的构造器，子类的辅助构造器最终都会调用主构造器，只有主构造器可以调用超类的构造器。
-
-scala类可以扩展Java类，这种情况下，它的主构造器必须调用Java超类的某一个构造方法。
-
------------
-重写字段
------------
-
-注意以下限制：
-
-- ``def`` 只能重写另一个 ``def``
-
-- ``val`` 只能重写另一个 ``val`` 或不带参数的 ``def``
-
-- ``var`` 只能重写另一个抽象的 ``var``
-
-
------------
-匿名子类
------------
-
-
-和Java一样，你可以通过包含带有定义或者重写代码块的方式创建一个匿名子类。
+每个包可以有一个包对象，你需要在父包中定义它，且名称和子包一样。
+例如：
 
 .. code-block:: scala
 
-	val align = new Person("Fred"){
-    	def greeting = "hello"
-	}
+    package com.horstman.patient
+    
+    package object people{
+        val defaultName = "John"
+    }
+    
+    package people{
+        class Person{
+            val name = defaultName  //从包对象中拿到常量
+            ...
+        }
+    }
 
 
 --------
-抽象类
+包可见性
 --------
 
-和Java一样，可以使用 ``abstract`` 关键字定义一个不能被实例化的类。
+在Java中，没有被声明为 ``public`` 、 ``private`` 或protected的类成员在包含该类的包中可见。在scala中，可以通过修饰符达到同样的目的。
+
+-----
+引入
+-----
+
+引入语句可以让你使用更短的名字而不是原来较长的名字。
+写法如下：
 
 .. code-block:: scala
-	
-	abstract class Person(val name:String){
-    	def id:Int
-	}
 
-但是在scala中，不像java，你不需要对抽象方法使用 ``abstract`` 关键字，你只是省去方法体。
+    import java.awt.Color
 
-在子类中重写父类的抽象方法时，你不需要使用 ``override`` 关键字。
+引入包中全部成员：
 
------------
-抽象字段
------------
+.. code-block:: scala
 
-除了抽象方法之外，类还可以拥有抽象字段，抽象字段就是一个没有初始化值的字段。
+    import java.awt._
 
-具体的子类必须提供具体的字段。和方法一样，在子类中重写超类的抽象字段时，不需要 ``override`` 关键字。
+----------------------
+任何地方都可以声明引入
+----------------------
 
+
+在scala中， ``import`` 语句可以出现在任意地方，并不仅限于文件顶部， ``import`` 语句的效果一直延伸到包含该语句的块末尾。
 
 -------------
-scala继承层级
+重命名和隐藏
 -------------
 
-所有其他类都是 ``AnyRef`` 的子类， ``AnyRef`` 相当于Java中的 ``Object`` 类。
+如果你想引入包中的几个成员，可以像这样使用选取器：
 
-``AnyVal`` 和 ``AnyRef`` 都扩展自 ``Any`` 类，而 ``Any`` 类是整个继承层级的根节点。
-
-``Null`` 类型的唯一实例就是 ``null`` 值，你可以额将 ``null`` 值赋值给任何引用，但不能赋值给值类型的应用。
-
-``Nothing`` 类型没有实例，它对于泛型结构时常有用。
-
---------------
-对象相等性
---------------
-
-在scala中， ``AnyRef`` 的 ``eq`` 方法检查两个引用是否指向同一个对象。 ``AnyRef`` 的 ``equals`` 方法调用 ``eq`` 。
+.. code-block:: scala
+    
+    import java.awt.{Color, Font}
 
 
+选取器还允许你重命名选到的成员：
+
+.. code-block:: scala
+    
+    import java.util.{HashMap => JavaHashMap}
+
+选取器 ``HashMap => _`` 将隐藏某个成员而不是重命名它。
+
+----------
+隐式引入
+----------
+
+每个scala程序都隐式的以如下代码开始：
+
+.. code-block:: scala
+    
+    import java.lang._
+    import scala._
+    import Predef._
 
 
+由于scala包默认导入，对于那些以scala开头的包，你完全不需要写全这个前缀。
 

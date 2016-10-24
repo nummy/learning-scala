@@ -1,114 +1,125 @@
-===========
-第三章 数组
-===========
+=============
+第三章 字符串
+=============
 
---------
-定长数组
---------
+在Scala中，字符串也是不可变对象。
 
-如果需要一个长度不变的数组，可以使用scala中的Array。
-
---------
-变长数组
---------
-
-变长数组使用ArrayBuffer，在数组缓存的尾端添加或者移除元素是一个高效的操作。
-
-使用toArray将数组缓存转为数组，使用toBuffer将数组转成缓存。
-
-------------------
-遍历数组和数组缓存
-------------------
-
-使用for循环遍历数组或者缓存：
-
-.. code-block:: scala
-
-	for( i <- 0 until a.length)
-    	println(i)
-
-如果想每两个元素一跳，可以这样遍历：
-
-.. code-block:: scala
-
-	0 until (a.length,2)
-
-如果想从数组的尾端开始，遍历写法为:
-
-.. code-block:: scala
-
-	(0 until a.length).reverse
-
---------
-数组转换
---------
-
-从一个数组出发，以某种方式对它进行转换，这些转换操作不会修改原数组，而是产生一个新的数组。
+----------
+创建字符串
+----------
 
 .. code-block:: scala
 	
-	val a = Array(1,2,3,4)
-	val result = for(elem <- a) yield 2*elem
+	var greeting = "Hello, world"
 
-结果返回一个类型与原始集合相同的新集合。
+	// or
 
-我们也可以给转换增加过滤条件：
-
-.. code-block:: scala
-	
-	for(elem <- a if elem % 2 == 0） yield 2 * elem
-
-注意原始集合并没有受到影响。
-
-另一种做法是：
-
-.. code-block:: scala
-	
-	a.filter(_ % 2 == 0).map(2 * _)
-
-甚至：
-
-.. code-block:: scala
-
-	a.filter{ _ % 2 == 0 } map {2 * _}
-
---------
-常用算法
---------
+	var greeting:String = "Hello, world"
 
 
-**求和**
+如果需要使用可变字符串，可以使用 ``StringBuilder`` 类。
+
+-----------
+字符串长度
+-----------
+
+使用 ``length()`` 获取字符串长度。
 
 .. code-block:: scala
 	
-	Array(1,2,3).sum
+	object Demo {
+    	def main(args: Array[String]) {
+        	var palindrome = "Dot saw I was Tod";
+        	var len = palindrome.length();
+        	println( "String Length is : " + len );
+    	}
+	}
 
-**最小值和最大值**
 
-.. code-block:: scala
-	
-	Array(1,2,3).min
-	Array(1,2,3).max
-
-**排序**
-
-.. code-block:: scala
-	
-	Array(5,2,1,4).sorted(_ < _)
-
-**显示数组内容**
+-------------
+拼接字符串
+-------------
 
 .. code-block:: scala
 	
-	a.mkString
-	a.mkString(" and ")
-	a.mkString("<",",",">")
+	string1.concat(string2);
 
---------
-多维数组
---------
+	// or
+
+	string1 + string2
+
+
+-------------
+格式化字符串
+-------------
+
+可以使用 ``printf`` 或者 ``format`` 来格式化字符串。
+
+
+----------
+字符串插值
+----------
+
+字符串插值允许用户将变量的引用直接嵌入到处理字符串字面量中。例如：
+
+.. code-block:: scala
+	
+	val name = "James"
+	println(s"Hello, $name")    //Hello, James
+
+
+scala提供了三种字符串插值方法： ``s``、 ``f `` 和 ``raw`` 
+
++++++++
+插值器s
++++++++
+
+在任何字符串之前添加 ``s`` ，则该字符串允许直接包含变量。
+
+字符串插值器也可以包含任意表达式：
+
 
 .. code-block:: scala
 
-	val matrix = Array.ofDim[Double](3,4)
+	println(s" 1+1 = ${1+1}")
+
+
+++++++++++++++
+格式化插值器f
+++++++++++++++
+
+在任何字符串字面量前追加 ``f`` ，就可以创造一个简单的格式化字符串，类似于其他语言中的 ``printf`` 。
+当使用插值器f时，所有变量的引用应该跟随 ``printf`` 风格的格式字符串，如同%d。
+例如：
+
+.. code-block:: scala
+	
+	val height = 1.9d
+	val name = "James"
+	println(f"$name%s is $height%2.2f meters tail")  // James is 1.90 meters tall
+
+插值器 ``f`` 是类型安全的。如果你试图传递一个只能工作于整数的格式化字符串，却又传了一个浮点数，编译器会发出一个错误。
+
++++++++++++
+插值器raw
++++++++++++
+
+插值器 ``raw`` 和插值器 ``s`` 相似，不同的是它不对字符串字面量执行转义。
+
+.. code-block:: scala
+	
+	scala> s"a\nb"
+	res0: String =
+	a
+	b
+
+插值器 ``s`` 将字符 ``\n`` 替换成了回车符。而插值器 ``raw`` 不会这么做。
+
+.. code-block:: scala
+	
+	scala> raw"a\nb"
+	res1: String = a\nb
+
+当你想要避免有表达式（例如 ``\n`` 变成回车）时，插值器 ``raw`` 是很有用的。 
+
 

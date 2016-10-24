@@ -1,175 +1,297 @@
-=========
-第五章 类
-=========
-
-----------------
-简单类和无参方法
-----------------
-
-Scala类最简单的形式和Java相似：
-
-.. code-block:: scala
-
-    class Counter {
-        private var value = 0 //必须初始化
-        def increment() { value += 1}   //方法默认是公有的
-        def current () = value
-
-在scala中，类并不声明为public，scala 源文件可以包含多个类，所有这些类都具有公有可见性。
-
-调用无参方法时，可以使用圆括号，也可以不使用。一般的，对于改值器方法使用(),对于取值器方法则去掉()。
-
-也可以使用不带()的方式声明 ``current`` 来强制调用的时候不使用()。
-
---------------------------
-带有getter和setter的属性
---------------------------
-
-Scala对每一个字段都提供了 ``getter`` 和 ``setter`` 方法。这里定义一个公有字段：
-
-.. code-block:: scala
-
-    class Person {
-        var age = 0
-    }
-
-Scala生成面向JVM的类，其中有一个私有的 ``age`` 字段以及相应的 ``getter`` 和 ``setter`` 方法。这两个方法是公有的，因为我们没有将 ``age`` 声明为 ``private`` 。对于私有字段而言，``getter`` 和 ``setter`` 也是私有的。
-
-在scala中，``getter`` 和 ``setter`` 分别叫做 ``age`` 和 ``age_=``。
-例如：
-
-.. code-block:: scala
-
-    println(fred.age)
-    fred.age = 20
-
-在任何时候你都可以自己重新定义 ``getter`` 和 ``setter`` 方法。
-
-如果字段是 ``val`` ，则只有 ``getter`` 方法被生成。如果你不需要任何 ``getter`` 和 ``setter`` ，可以将字段声明为 ``private[this]`` 。
-
--------------------
-只带getter的属性
--------------------
-
-是用 ``val`` 字段，scala会生成一个 ``final`` 字段和一个 ``getter`` 方法。
-
---------------
-对象私有字段
---------------
-
-在scala中，方法可以访问该类的所有对象的私有字段。scala允许我们定义更加严格的访问限制，通过 ``private[this]`` 这个修饰符实现。
-
-.. code-block:: scala
-
-    private[this] val value = 0 //类似某个对象.value这样的访问将不被允许
-
-这样的访问有时候称之为对象私有的。
-
-对于类私有的字段，scala会生成私有的 ``getter``和 ``setter`` 方法，但对于对象私有的字段，scala根本不会生成getter和setter方法。
-
-scala允许将访问权赋予给指定的类，``private[类名]`` 修饰符可以定义仅有指定类的方法可以访问给定的字段。这里的类必须是当前定义的类，或者是包含该类的外部类。
-
--------------
-辅助构造器
--------------
-
-和Java一样，Scala也可以有任意多的构造器，包括主构造器与辅助构造器。
-
-辅助构造器与Java的构造器类似，只有两处不同：
-
-* 辅助构造器的名称为 ``this``
-
-* 每一个辅助构造器都必须以一个对先前已定义的的其他辅助构造器或主构造器的调用开始。
-
-下面的类中包含两个辅助构造器：
-
-.. code-block:: scala
-
-    class Person{
-        private var name = ""
-        private var age = 0
-        
-        def this(name:String) {
-            this()
-            this.name = name
-        }
-        
-        def this(name:String, age:Int){
-            this(name)
-            this.age = age
-        }
-    }
-
-
-一个类如果没有显示定义主构造器则自动拥有一个无参的主构造器。
-
-现在，我们可以使用三种方式构建对象：
-
-.. code-block:: scala
-
-    val p1 = Person
-    val p2 = Person("Jim")
-    val p3 = Person("Jim",12）
+=======================
+第五章 映射、选项以及元组
+=======================
 
 ---------
-主构造器
+构造映射
 ---------
 
-在scala中，每个类都有主构造器，主构造器并不以 ``this`` 方法定义，而与类定义交织在一起。
-
-1. 主构造器的参数直接放置在类名之后。
+**不可变映射**
 
 .. code-block:: scala
 
-    class Person(val name:String, val age:Int){
-        ...
-    }
+	val score = Map("Alice"->80)
 
-
-主构造器的参数被编译成字段，其值被初始化成构造时传入的参数。
-
-2. 主构造器会执行类定义中的所有字段。例如:
+**可变映射**
 
 .. code-block:: scala
 
-    class Person(val name:String, val age:Int){
-        println("Just constructed another person")
-        ...
-    }
+	val score = scala.collection.mutable.Map("Alice"-90)
+
+在scala中，映射是一个对偶，对偶是两个值构成的组，这两个值不一定是同一类型。
+
+使用 ``->`` 来创建对偶。
 
 
-``println`` 语句是主构造器的一部分，每当有对象被构造出来的时候，上述代码就会被执行。当你I需要再构造过程中配置某个字段的时候这个特性特别有用。
+**获取映射的值**
 
 
-如果类名之后没有参数，则该类具备一个无参主构造器，这样的一个构造器仅仅简单的执行类体中的所有语句而已。
-
-构造函数也可以是普通的方法参数，不带 ``val`` 或 ``var``。这样的参数如何处理取决于它在类中如何被使用。
-
-- 如果不带 ``val`` 或者 ``var`` 参数至少被一个方法所使用，它将被升格为字段。例如：
+在scala中使用 ``()`` 表示法来查找某个键对应的值。
 
 .. code-block:: scala
 
-    class Person(name:String, age:Int){
-        def description = name + " is " + age + " years old"
-    }
+	val bobscore = scores("Bob")
 
-上述代码声明并初始化了不可变字段的 ``name`` 和 ``age``。而这两个字段都是对象私有化的。类似这样的字段等同于 ``private[this] val`` 字段的效果。
+如果映射并不包含请求中使用的键，则会抛出异常。
 
-- 否则，该参数将不被保存为字段，它仅仅是一个可以被主构造器中的代码访问的普通参数表。
+要检查映射中是否有某个指定的键，可以使用 ``contains()`` 方法。
 
-如果想让主构造器变成私有的，可以像这样放置 ``private`` 关键字。
+除此之外，我们还可以使用 ``getOrElse()`` 方法。
+
+
+**更新映射中的值**
+
+
+
+在可变映射中，可以更新映射值，做法是在=的左侧使用()。
 
 .. code-block:: scala
 
-    class Person private (val id:Int){
-        ...
-    }
+	scores("Bob") = 10
 
-这样一来，用户就必须通过辅助构造器来构造Person对象了。
 
--------
-嵌套类
--------
+也可以使用 ``+=`` 来添加多个关系
 
-在scala中，你几乎可以在任何语法结构中内嵌任何语法结构，你可以在函数中定义函数，也可以在类中定义类。
+.. code-block:: scala
+	
+	scores +=  ("Kate" -> 80)
 
+使用 ``-=`` 移除某个键和对应的值。
+
+
+**迭代映射**
+
+使用for循环遍历映射中所有的键：
+
+.. code-block:: scala
+	
+	for( (k, v) <- map)
+
+**访问键或者值**
+
+
+.. code-block:: scala
+	
+	scores.keySet
+	scores.values
+
+**反转映射**
+
+.. code-block:: scala
+	
+	for( (k, v) <- map) yield (v, k)
+
+**已排序映射**
+
+
+.. code-block:: scala
+
+	val scores = scala.collections.immutable.SortedMap("A"->1, "B"->2)
+
+如果需要按插入顺序访问所有键的话，使用 ``LinkedHashMap`` 。
+
+----
+选项
+----
+
+``Option`` 是一个表示有可能包含值的容器。
+
+``Option`` 基本的接口是这样的：
+
+.. code-block:: scala
+
+	trait Option[T] {
+	  def isDefined: Boolean
+ 	  def get: T
+ 	  def getOrElse(t: T): T
+	}
+
+``Option`` 本身是泛型的，并且有两个子类： ``Some[T]``  或  ``None``
+
+``Map.get`` 使用 ``Option`` 作为其返回值，表示这个方法也许不会返回你请求的值。
+
+模式匹配能自然地配合 ``Option`` 使用。
+
+.. code-block:: scala
+
+	val result = res1 match {
+	  case Some(n) => n * 2
+	  case None => 0
+	}
+
+-----
+元组
+-----
+
+元组是不同类型值的集合。
+
+.. code-block:: scala
+	
+	val t = (1, "a", 3.14)
+
+和数组或字符串中的位置不同，元组从1开始而不是0。
+
+在创建两个元素的元组时，可以使用特殊语法： ``->``:
+
+.. code-block:: scala
+
+	scala> 1 -> 2
+	res0: (Int, Int) = (1,2)
+
+通常，使用模式匹配来获取元组的组员。
+
+.. code-block:: scala
+	
+	val (first , second, third ) = t
+
+如果并不是所有的部件都需要，则可以在不需要的位置使用 ``_`` 。
+
+.. code-block:: scala
+	
+	val (first, second, _) =  t
+
+------------
+常用集合操作
+------------
+
++++
+Map
++++
+
+``map`` 对列表中的每个元素应用一个函数，返回应用后的元素所组成的列表。
+
+.. code-block:: scala
+
+	scala> numbers.map((i: Int) => i * 2)
+	res0: List[Int] = List(2, 4, 6, 8)
+
+或者传入一个函数：
+
+.. code-block:: scala
+
+	scala> def timesTwo(i: Int): Int = i * 2
+	timesTwo: (i: Int)Int
+
+	scala> numbers.map(timesTwo _)
+	res0: List[Int] = List(2, 4, 6, 8)
+
++++++++
+foreach
++++++++
+
+``foreach`` 很像 ``map`` ，但没有返回值。 ``foreach`` 仅用于有副作用的函数。
+
+.. code-block:: scala
+
+	scala> numbers.foreach((i: Int) => i * 2)
+
+该函数返回值为Unit类型。
+
+++++++
+filter
+++++++
+
+``filter`` 移除任何对传入函数计算结果为 ``false`` 的元素。返回一个布尔值的函数通常被称为谓词函数[或判定函数]。
+
+.. code-block:: scala
+
+	scala> numbers.filter((i: Int) => i % 2 == 0)
+	res0: List[Int] = List(2, 4)
+	
+	scala> def isEven(i: Int): Boolean = i % 2 == 0
+	isEven: (i: Int)Boolean
+
+	scala> numbers.filter(isEven _)
+	res2: List[Int] = List(2, 4)
+
++++
+zip
++++
+
+``zip`` 将两个列表的内容聚合到一个对偶列表中。
+
+.. code-block:: scala
+
+	scala> List(1, 2, 3).zip(List("a", "b", "c"))
+	res0: List[(Int, String)] = List((1,a), (2,b), (3,c))
+
++++++++++
+partition
++++++++++
+
+``partition`` 将使用给定的谓词函数分割列表。
+
+.. code-block:: scala
+
+	scala> val numbers = List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+	scala> numbers.partition(_ % 2 == 0)
+	res0: (List[Int], List[Int]) = (List(2, 4, 6, 8, 10),List(1, 3, 5, 7, 9))
+
+++++ 
+find
+++++
+
+``find`` 返回集合中第一个匹配谓词函数的元素。
+
+.. code-block:: scala
+
+	scala> numbers.find((i: Int) => i > 5)
+	res0: Option[Int] = Some(6)
+
+++++++++++++++++
+drop & dropWhile
+++++++++++++++++
+
+``drop`` 将删除前i个元素
+
+.. code-block:: scala
+
+	scala> numbers.drop(5)
+	res0: List[Int] = List(6, 7, 8, 9, 10)
+
+``dropWhile`` 将删除元素直到找到第一个匹配谓词函数的元素。例如，如果我们在numbers列表上使用 ``dropWhile`` 奇数的函数, 1将被丢弃（但3不会被丢弃，因为他被2“保护”了）。
+
+.. code-block:: scala
+
+	scala> numbers.dropWhile(_ % 2 != 0)
+	res0: List[Int] = List(2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+++++++++++++++++++++
+foldLeft & foldRight
+++++++++++++++++++++
+
+.. code-block:: scala
+
+	scala> numbers.foldLeft(0)((m: Int, n: Int) => m + n)
+	res0: Int = 55
+	
+0为初始值（记住numbers是 ``List[Int]`` 类型），m作为一个累加器。
+
+``foldRight`` 和 ``foldLeft`` 一样，只是运行过程相反。
+
++++++++
+flatten
++++++++
+
+``flatten`` 将嵌套结构扁平化为一个层次的集合。
+
+.. code-block:: scala
+
+	scala> List(List(1, 2), List(3, 4)).flatten
+	res0: List[Int] = List(1, 2, 3, 4)
+	
++++++++
+flatMap
++++++++
+
+``flatMap`` 是一种常用的组合子，结合映射 ``[mapping]`` 和扁平化 ``[flattening]`` 。 ``flatMap`` 需要一个处理嵌套列表的函数，然后将结果串连起来。
+
+.. code-block:: scala
+
+	scala> val nestedNumbers = List(List(1, 2), List(3, 4))
+	nestedNumbers: List[List[Int]] = List(List(1, 2), List(3, 4))
+
+	scala> nestedNumbers.flatMap(x => x.map(_ * 2))
+	res0: List[Int] = List(2, 4, 6, 8)
+	
+可以把它看做是“先映射后扁平化”的快捷操作。

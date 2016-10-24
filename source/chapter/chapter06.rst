@@ -1,144 +1,175 @@
-===========
-第六章 对象
-===========
+=========
+第六章 类
+=========
 
---------
-单例对象
---------
+----------------
+简单类和无参方法
+----------------
 
-scala中没有静态方法或静态字段，不过可以使用object这个语法结构来达到同样的目的。对象定义了某个类的单个实例，包含了我们想要的特性。
+Scala类最简单的形式和Java相似：
 
+.. code-block:: scala
+
+    class Counter {
+        private var value = 0 //必须初始化
+        def increment() { value += 1}   //方法默认是公有的
+        def current () = value
+
+在scala中，类并不声明为public，scala 源文件可以包含多个类，所有这些类都具有公有可见性。
+
+调用无参方法时，可以使用圆括号，也可以不使用。一般的，对于改值器方法使用(),对于取值器方法则去掉()。
+
+也可以使用不带()的方式声明 ``current`` 来强制调用的时候不使用()。
+
+--------------------------
+带有getter和setter的属性
+--------------------------
+
+Scala对每一个字段都提供了 ``getter`` 和 ``setter`` 方法。这里定义一个公有字段：
+
+.. code-block:: scala
+
+    class Person {
+        var age = 0
+    }
+
+Scala生成面向JVM的类，其中有一个私有的 ``age`` 字段以及相应的 ``getter`` 和 ``setter`` 方法。这两个方法是公有的，因为我们没有将 ``age`` 声明为 ``private`` 。对于私有字段而言，``getter`` 和 ``setter`` 也是私有的。
+
+在scala中，``getter`` 和 ``setter`` 分别叫做 ``age`` 和 ``age_=``。
 例如：
 
 .. code-block:: scala
-    
-    object Accounts {
-        private var lastNumber = 0
-        def newUniqueNumber() = {lastNumber += 1; lastNumber }
-    }
 
-对象的构造器在第一次使用时被调用，如果一个对象从未被使用，那么其构造器也不会被执行。
+    println(fred.age)
+    fred.age = 20
 
-对象本质上可以拥有类的所有特性，它甚至可以扩展其他类和特质，只有一个例外，不能提供构造参数。
+在任何时候你都可以自己重新定义 ``getter`` 和 ``setter`` 方法。
 
-对于任何你在Java中会使用单例对象的地方，在Scala中都可以用对象实现：
-- 作为存放工具函数和常量的地方
-- 高效的共享单个不可变实例
-- 需要用单个实例来协调某个服务时。
+如果字段是 ``val`` ，则只有 ``getter`` 方法被生成。如果你不需要任何 ``getter`` 和 ``setter`` ，可以将字段声明为 ``private[this]`` 。
 
---------
-伴生对象
---------
+-------------------
+只带getter的属性
+-------------------
 
+是用 ``val`` 字段，scala会生成一个 ``final`` 字段和一个 ``getter`` 方法。
 
-在Java中，通常会用到既有实例方法又有静态方法的类，在类中，可以通过类和与类同名的伴生对象来实现。例如：
+--------------
+对象私有字段
+--------------
+
+在scala中，方法可以访问该类的所有对象的私有字段。scala允许我们定义更加严格的访问限制，通过 ``private[this]`` 这个修饰符实现。
 
 .. code-block:: scala
-    
-    class Accounts {
-        val id = Accounts.newUniqueNumber()
-        private var balance = 0.0
-    
-        def despoit(amount:Double){balance += amount}
-            ...
-    }
 
-    object Accounts {
-        private var lastNumber = 0
+    private[this] val value = 0 //类似某个对象.value这样的访问将不被允许
+
+这样的访问有时候称之为对象私有的。
+
+对于类私有的字段，scala会生成私有的 ``getter``和 ``setter`` 方法，但对于对象私有的字段，scala根本不会生成getter和setter方法。
+
+scala允许将访问权赋予给指定的类，``private[类名]`` 修饰符可以定义仅有指定类的方法可以访问给定的字段。这里的类必须是当前定义的类，或者是包含该类的外部类。
+
+-------------
+辅助构造器
+-------------
+
+和Java一样，Scala也可以有任意多的构造器，包括主构造器与辅助构造器。
+
+辅助构造器与Java的构造器类似，只有两处不同：
+
+* 辅助构造器的名称为 ``this``
+
+* 每一个辅助构造器都必须以一个对先前已定义的的其他辅助构造器或主构造器的调用开始。
+
+下面的类中包含两个辅助构造器：
+
+.. code-block:: scala
+
+    class Person{
+        private var name = ""
+        private var age = 0
         
-        def newUniqueNumber() = {
-            lastNumber += 1; lastNumber
+        def this(name:String) {
+            this()
+            this.name = name
+        }
+        
+        def this(name:String, age:Int){
+            this(name)
+            this.age = age
         }
     }
 
-类和它的伴生对象可以互相访问私有特性，它们必须存在于同一个源文件中。
 
-类的伴生对象可以被访问，但是并不在作用域中。
+一个类如果没有显示定义主构造器则自动拥有一个无参的主构造器。
 
-------------------
-扩展类或特质的对象
-------------------
-
-一个对象可以扩展类以及一个或者多个特质，其结果是一个扩展了指定类以及特质的类的对象，同时拥有在对象定义中给出的所有特性。
-
-一个有用的场景是给出可被共享的缺省对象。
-
-------------
-apply方法
-------------
-
-我们通常会定义和使用对象的方法，当遇到如下形式的表达式时，apply方法就会被调用：
+现在，我们可以使用三种方式构建对象：
 
 .. code-block:: scala
-    
-    Object(arg1, ..., argN)
 
-通常这样一个 ``apply`` 方法返回的是伴生类的对象。
+    val p1 = Person
+    val p2 = Person("Jim")
+    val p3 = Person("Jim",12）
 
----------------
-应用程序对象
----------------
+---------
+主构造器
+---------
 
-每个scala程序都必须从一个对象的 ``main`` 方法开始，这个方法的类型为 ``Array[String]=>Unit``:
+在scala中，每个类都有主构造器，主构造器并不以 ``this`` 方法定义，而与类定义交织在一起。
+
+1. 主构造器的参数直接放置在类名之后。
 
 .. code-block:: scala
-    
-    object Hello {
-    
-        def main(args:Array[String]){
-            println("hello,world")
-        }
+
+    class Person(val name:String, val age:Int){
+        ...
     }
 
-除了每次都提供自己的main方法之外，我们还可以扩展App特质，然后将程序代码放到构造器方法体中：
+
+主构造器的参数被编译成字段，其值被初始化成构造时传入的参数。
+
+2. 主构造器会执行类定义中的所有字段。例如:
 
 .. code-block:: scala
-    
-    object Hello extends APP {
-        
-        println("hello,world")
-    
+
+    class Person(val name:String, val age:Int){
+        println("Just constructed another person")
+        ...
     }
 
-如果需要命令行参数，可以通过 ``args`` 属性获取。
 
------
-枚举
------
+``println`` 语句是主构造器的一部分，每当有对象被构造出来的时候，上述代码就会被执行。当你I需要再构造过程中配置某个字段的时候这个特性特别有用。
 
-和Java不同，scala并没有枚举类型，不过标准类库提供了一个 ``Enumeration`` 助手类，可以用于产生枚举。
 
-定义一个扩展 ``Enumeration`` 类的对象并以Value方法调用初始化枚举中的所有可选值。
+如果类名之后没有参数，则该类具备一个无参主构造器，这样的一个构造器仅仅简单的执行类体中的所有语句而已。
+
+构造函数也可以是普通的方法参数，不带 ``val`` 或 ``var``。这样的参数如何处理取决于它在类中如何被使用。
+
+- 如果不带 ``val`` 或者 ``var`` 参数至少被一个方法所使用，它将被升格为字段。例如：
 
 .. code-block:: scala
 
-    object TrafficLightColor extends Enumeration {
-    
-        val Red, Yellow, Green = Value
-    
+    class Person(name:String, age:Int){
+        def description = name + " is " + age + " years old"
     }
 
-这里定义了三个字段：Red, Yeelow, Green。然后调用Value方法进行初始化：
+上述代码声明并初始化了不可变字段的 ``name`` 和 ``age``。而这两个字段都是对象私有化的。类似这样的字段等同于 ``private[this] val`` 字段的效果。
 
-.. code-block:: scala
-    
-    val Red = Value
-    val Yellow 　= Value
-    val Green = Green
+- 否则，该参数将不被保存为字段，它仅仅是一个可以被主构造器中的代码访问的普通参数表。
 
-每次调用 ``Value`` 方法都返回内部类的新实例，该内部类也叫 ``Value`` 。
-或者，也可以向 ``Value`` 方法传递ID、名称，或两个参数都传。
+如果想让主构造器变成私有的，可以像这样放置 ``private`` 关键字。
 
 .. code-block:: scala
 
-    val Red = Value(0, "Stop")
-    val Yellow = Value(10)
-    val Green = Value("Go")
+    class Person private (val id:Int){
+        ...
+    }
 
-如果不指定，则ID将在前一个枚举值的基础上加一， 从零开始，缺省名称为字段名。
+这样一来，用户就必须通过辅助构造器来构造Person对象了。
 
-定义完成之后，就可以使用 ``TrafficLightColor.Red、TrafficLightCOlor.Yellow``  等来引用枚举值了。
+-------
+嵌套类
+-------
 
-枚举值的ID可以通过id方法返回，名称通过toString方法返回。
-
+在scala中，你几乎可以在任何语法结构中内嵌任何语法结构，你可以在函数中定义函数，也可以在类中定义类。
 

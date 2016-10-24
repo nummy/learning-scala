@@ -1,156 +1,147 @@
-================
-第七章 包和引入
-================
+===========
+第七章 对象
+===========
 
----
-包
----
+--------
+单例对象
+--------
 
-scala的包目的和Java中的包一样：管理大型程序中的名称。
+scala中没有静态方法或静态字段，不过可以使用object这个语法结构来达到同样的目的。对象定义了某个类的单个实例，包含了我们想要的特性。
 
-要增加条目到包中，可以将其包含在包语句中，例如：
-
-.. code-block:: scala
-
-    package com{
-        package horstman {
-            package patient{
-                class Employee{
-                ...
-                }
-            }
-        }
-    }
-
-这样一来，类名 ``Employee`` 就可以在任意位置以 ``com.horstman.patient.Employee`` 访问了。
-
-与对象和类的定义不同，同一个包可以定义在多个文件中。
-
-源文件的目录和包之间并没有强制的关联关系，也就是说可以在同一个文件中定义多个包。
-
-----------
-作用域规则
-----------
-
-在scala中，包的作用域比Java更加前后一致，scala的包和其他作用域一样支持嵌套。可以访问上层作用域中的名称。
-
-在Java中包名是绝对的，从包层级的最顶端开始，但是在scala中，包名是相对的，就像内部类的名称一样。
-
-------------
-串联式包语句
-------------
-
-包语句可以包含一个串，或者说路径区段：
-
-.. code-block:: scala
-
-    package com.hosrtman.patient{
-        package people{
-            class Person{
-                ...
-            }
-        }
-    }
-
-这条语句限制了可见的成员。
-
---------------
-文件顶部标识法
---------------
-
-除了使用嵌套标记法之外，还可以在文件顶部使用package语句，不带花括号。
-
-.. code-block:: scala
-
-    package com.hosrtman.people.patient
-    package people
-
-------
-包对象
-------
-
-包可以包含类，对象和特质，但是不能包含函数和变量的定义。
-
-每个包可以有一个包对象，你需要在父包中定义它，且名称和子包一样。
 例如：
 
 .. code-block:: scala
-
-    package com.horstman.patient
     
-    package object people{
-        val defaultName = "John"
+    object Accounts {
+        private var lastNumber = 0
+        def newUniqueNumber() = {lastNumber += 1; lastNumber }
     }
+
+对象的构造器在第一次使用时被调用，如果一个对象从未被使用，那么其构造器也不会被执行。
+
+对象本质上可以拥有类的所有特性，它甚至可以扩展其他类和特质，只有一个例外，不能提供构造参数。
+
+对于任何你在Java中会使用单例对象的地方，在Scala中都可以用对象实现：
+
+- 作为存放工具函数和常量的地方
+
+- 高效的共享单个不可变实例
+
+- 需要用单个实例来协调某个服务时。
+
+--------
+伴生对象
+--------
+
+
+在Java中，通常会用到既有实例方法又有静态方法的类，在类中，可以通过类和与类同名的伴生对象来实现。例如：
+
+.. code-block:: scala
     
-    package people{
-        class Person{
-            val name = defaultName  //从包对象中拿到常量
+    class Accounts {
+        val id = Accounts.newUniqueNumber()
+        private var balance = 0.0
+    
+        def despoit(amount:Double){balance += amount}
             ...
+    }
+
+    object Accounts {
+        private var lastNumber = 0
+        
+        def newUniqueNumber() = {
+            lastNumber += 1; lastNumber
         }
     }
 
+类和它的伴生对象可以互相访问私有特性，它们必须存在于同一个源文件中。
 
---------
-包可见性
---------
+类的伴生对象可以被访问，但是并不在作用域中。
 
-在Java中，没有被声明为 ``public`` 、 ``private`` 或protected的类成员在包含该类的包中可见。在scala中，可以通过修饰符达到同样的目的。
+------------------
+扩展类或特质的对象
+------------------
+
+一个对象可以扩展类以及一个或者多个特质，其结果是一个扩展了指定类以及特质的类的对象，同时拥有在对象定义中给出的所有特性。
+
+一个有用的场景是给出可被共享的缺省对象。
+
+------------
+apply方法
+------------
+
+我们通常会定义和使用对象的方法，当遇到如下形式的表达式时，apply方法就会被调用：
+
+.. code-block:: scala
+    
+    Object(arg1, ..., argN)
+
+通常这样一个 ``apply`` 方法返回的是伴生类的对象。
+
+---------------
+应用程序对象
+---------------
+
+每个scala程序都必须从一个对象的 ``main`` 方法开始，这个方法的类型为 ``Array[String]=>Unit``:
+
+.. code-block:: scala
+    
+    object Hello {
+    
+        def main(args:Array[String]){
+            println("hello,world")
+        }
+    }
+
+除了每次都提供自己的main方法之外，我们还可以扩展App特质，然后将程序代码放到构造器方法体中：
+
+.. code-block:: scala
+    
+    object Hello extends APP {
+        
+        println("hello,world")
+    
+    }
+
+如果需要命令行参数，可以通过 ``args`` 属性获取。
 
 -----
-引入
+枚举
 -----
 
-引入语句可以让你使用更短的名字而不是原来较长的名字。
-写法如下：
+和Java不同，scala并没有枚举类型，不过标准类库提供了一个 ``Enumeration`` 助手类，可以用于产生枚举。
+
+定义一个扩展 ``Enumeration`` 类的对象并以Value方法调用初始化枚举中的所有可选值。
 
 .. code-block:: scala
 
-    import java.awt.Color
+    object TrafficLightColor extends Enumeration {
+    
+        val Red, Yellow, Green = Value
+    
+    }
 
-引入包中全部成员：
-
-.. code-block:: scala
-
-    import java.awt._
-
-----------------------
-任何地方都可以声明引入
-----------------------
-
-
-在scala中， ``import`` 语句可以出现在任意地方，并不仅限于文件顶部， ``import`` 语句的效果一直延伸到包含该语句的块末尾。
-
--------------
-重命名和隐藏
--------------
-
-如果你想引入包中的几个成员，可以像这样使用选取器：
+这里定义了三个字段：Red, Yeelow, Green。然后调用Value方法进行初始化：
 
 .. code-block:: scala
     
-    import java.awt.{Color, Font}
+    val Red = Value
+    val Yellow 　= Value
+    val Green = Green
 
-
-选取器还允许你重命名选到的成员：
-
-.. code-block:: scala
-    
-    import java.util.{HashMap => JavaHashMap}
-
-选取器 ``HashMap => _`` 将隐藏某个成员而不是重命名它。
-
-----------
-隐式引入
-----------
-
-每个scala程序都隐式的以如下代码开始：
+每次调用 ``Value`` 方法都返回内部类的新实例，该内部类也叫 ``Value`` 。
+或者，也可以向 ``Value`` 方法传递ID、名称，或两个参数都传。
 
 .. code-block:: scala
-    
-    import java.lang._
-    import scala._
-    import Predef._
 
+    val Red = Value(0, "Stop")
+    val Yellow = Value(10)
+    val Green = Value("Go")
 
-由于scala包默认导入，对于那些以scala开头的包，你完全不需要写全这个前缀。
+如果不指定，则ID将在前一个枚举值的基础上加一， 从零开始，缺省名称为字段名。
+
+定义完成之后，就可以使用 ``TrafficLightColor.Red、TrafficLightCOlor.Yellow``  等来引用枚举值了。
+
+枚举值的ID可以通过id方法返回，名称通过toString方法返回。
+
 

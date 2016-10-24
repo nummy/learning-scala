@@ -1,117 +1,134 @@
-=============
-第十五章 注解
-=============
-
-----------
-什么是注解
-----------
-
-注解是那些你插入到代码中以便有工具可以对它们进行处理的标签。
-
-注解的语法和Java一样，可以对scala类使用Java注解，也可以使用Scala注解，scala注解是scala独有的。Java注解不影响编译器如何将源码编译成字节码，而Scala可以影响到编译过程。
-
---------------
-什么可以被注解
---------------
-
-在scala中，你可以为类、方法、字段、局部变量和参数添加注解，和Java一样。
-
-.. code-block:: scala
-	
-	@Entity class Credentials
-	@Test def test(){}
-	@BeanProperty var username = _
-	def doSomething(@NotNull message:String){}
-
-
-也可以同时添加多个注解，先后次序没有影响。
-
-.. code-block:: scala
-	
-	@BeanProperty @Id var username = _
-
-在给主构造器添加注解的时候，需要将注解放置在构造器之前，并加上一对圆括号（如果注解不带参数的话）
-
-.. code-block:: scala
-	
-	class Credential @inject() (var username:String, var password:String)
-
-
-还可以为表达式添加注解，需要在表达式后面添加冒号，然后注解本身。
-
-.. code-block::scala
-	
-	(myMap.get(key):@unchecked) match{...}
-
-也可以为类型参数添加注解：
-
-.. code-block:: scala
-	
-	class MyContainer[@specialized T]
-
-针对实际类型的注解应该放在类型名称之后：
-
-.. code-block:: scala
-	
-	String @cps[Unit]
+==========================
+第十五章 文件和正则表达式
+==========================
 
 --------
-注解参数
+读取行
 --------
 
-Java注解可以有带名参数：
+要读取文件中的所有行，可以调用 ``scala.io.Source`` 对象的 ``getLines`` 方法。
+
+.. code-block:: scala
+	
+	import scala.io.Source  
+	val source = Source.fromFile("a.txt", "UTF-8")
+	val lineIterator = source.getLines
+
+结果是一个迭代器。可以用来逐条处理这些行。或者也可以对迭代器应用 ``toArray`` 和 ``toBuffer``方法。
+
+有时候，你只想将整个文件读取成一个字符串，这更加简单：
 
 .. code-block:: scala
 
-	@Test(timeout=100, expected=classOf[IOException])
+	val contents = source.mkString
 
-如果参数名为 ``Value`` ，则参数名可以直接省略。如果注解不带参数，则圆括号可以省去。
+在调用完 ``Source`` 对象之后，记得 ``close`` 。
+
+--------
+读取字符
+--------
+
+如果需要读取单个字符，可以直接把 ``Source`` 对象当作迭代器，因为 ``Source`` 类扩展自 ``Iterator[Char]`` :
+
+.. code-block:: scala
+	
+	for(c <- source) //处理c
+
+-------------------
+从URL或者其他源读取
+-------------------
+
+``Source`` 对象有读取非文件源的方法：
 
 .. code-block:: scala
 
-	@Named("credt") var credentials:Credentials = _
+	val source1 = Source.fromURL("http://www.baidu.com")
+	val source2 = Source.fromString("hello,world")
+	val source3 = Source.stdin
 
-
-大多数注解参数都有缺省值。
-
-Java注解的参数类型只能为：
-
-- 数值型字面量
-
-- 字符串
-
-- 类字面量
-
-- Java枚举
-
-- 其他注解
-
-scala注解可以是任何类型。
-
---------
-注解实现
---------
-
-注解必须扩展 ``Annotation`` 特质。
 
 --------------
-针对Java的注解
+读取二进制文件
 --------------
 
+Scala没有提供读取二进制的方法，需要使用Java类库。
+
+.. code-block:: scala
+	
+	val file = new File(filename)
+	val in = new FileInputStream(file)
+	var bytes = new Array[Byte](file.length.toInt)
+	in.read(bytes)
+	in.close()
+
+------------
+写入文本文件
+------------
+
+一样没有提供内建方法，需要使用Java类库。
+
+.. code-block:: scala
+	
+	import java.io.PrintWriter
+	val out = new PrintWriter("numbers.txt")
+	for(i <- 1 to 10) out.println(i)
+	out.close()
+
+------
+序列化
+------
+
+首先声明一个可序列化的类：
+
+.. code-block:: scala
+
+	@SerialVersionUID(42L) classs Person extends Serializable
+
+
+``Serializable`` 特质定义在scala包中，因此不需要显示导入。
+
+如果你能接受缺省的ID，也可以省略掉 ``@SerialVersionUID`` 注解。
+
+Scala集合类都是可序列化的，因此可以把他们用作可序列化类的成员。
+
+--------
+进程控制
+--------
+
+scala提供了 ``scala.sys.process`` 包用于与 ``shell`` 交互。
+
+.. code-block:: scala
+	
+	import sys.process._
+	"ls -al "!
+
 ----------
-Java修饰符
+正则表达式
 ----------
 
+要构造一个 ``Regex`` 对象，用 ``String`` 类的 ``r`` 方法即可。
 
-| These lines are
-| broken exactly like in
-| the source file.
+.. code-block:: scala
+	
+	val pattern = "[0-9]+".r
 
-=====  =====  =======
-A      B      A and B
-=====  =====  =======
-False  False  False
-True   False  False
-False  True   False
-True   True   True
-=====  =====  =======
+如果正则表达式包含了反斜杠或者引号的话，最好使用原始字符串的形式 ``"""...""""`` 。
+
+``findAllIn`` 方法返回遍历所有匹配项的迭代器。
+
+使用 ``toArray`` 可以将迭代器转换成数组。
+
+要想找到字符串中的首个匹配项，可以使用 ``findFirstIn`` ，得到的结果是一个 ``Option[String]`` 。
+
+使用 ``replaceFirstIn`` 或者 ``replaceAllIn`` 替换首个或者全部匹配字符串。
+
+-------------
+正则表达式组
+-------------
+
+分组可以让我们方便的获取正则表达式的子表达式。
+
+.. code-block:: scala
+	
+	val numItemPattern = "([0-9]+) ([a-z]+)".r
+	val numItemPattern(num, item) = "99 bottles"

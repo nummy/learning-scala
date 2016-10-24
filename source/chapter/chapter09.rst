@@ -1,155 +1,164 @@
-=================
-第九章 特质
-=================
+===========
+第九章 继承
+===========
 
--------
-特质
--------
+----------
+扩展类
+----------
 
-scala中没有多重继承，scala提供特质而非接口，特质可以同时拥有具体方法和抽象方法，而类可以实现多个特质。
-
-在重写特质的抽象方法时不需要使用 ``override`` 关键字。
-
-如果你需要不止一个特质，可以用with关键字来添加额外的特质。
-
-所有Java接口都可以作为scala特质来使用。
-
-------------------
-带有具体实现的特质
-------------------
-
-在scala中，特质的方法不一定需要是抽象的。
-
-让特质拥有具体行为有一个弊端，当特质改变的时候，所有混入该特质的类都必须重新编译。
-
-------------------
-带有特质的对象
-------------------
-
-在构造单个对象时，可以给它添加特质。
+scala扩展类的方式和Java一样，使用 ``extends`` 关键字：
 
 .. code-block:: scala
 
-	val act = new SavingAccount with ConsoleLogger
+	class Employee extends Person{
+	    val salary = 0.0
+    	...
+	}
 
-----------------------
-在特质中重写抽象方法
-----------------------
 
-首先定义特质 ``Logger`` ：
+和Java一样，你可以将类声明为 ``final`` ，这样它就不能被扩展。你可以将单个方法或者字段声明为 ``final`` ， 以确保它们不能够被重写。
+
+----------
+重写方法
+----------
+
+在scala中重写一个非抽象方法必须使用 ``override`` 修饰符。
+
+.. code-block:: scala
+
+	public class Person{
+    	...
+    	override def toString = getClass.getName + "[name=" + name + "]"
+	}
+
+``override`` 修饰符可以用在多个情况下给出有用的错误提示。包括：
+
+- 当你拼错要重写的方法名
+
+- 当你不小心在新方法中使用错误的参数类型。
+
+- 当你在超类中引入新的方法，而这个新的方法与子类的方法相抵触。
+
+在scala中调用超类的方法和Java一样，使用 ``super`` 关键字。
+
+----------------
+类型转换和检查
+----------------
+
+要检查某个对象是否属于某个特定的类，可以用 ``isInstanceOf`` 方法。如果测试成功，你就可以使用 ``asInstanceOf`` 方法将引用转换为子类的引用。
+
+.. code-block:: scala
+
+	if (p.isInstanceOf[Employee]){
+    	val s = p.asInstanceOf[Employee]
+	}
+
+如果 ``p`` 指向的是 ``Employee`` 类及其子类，则 ``p.isInstanceOf[Employee]`` 就会成功；
+
+如果 ``p`` 是 ``null`` ， 则 ``p.isInstanceOf[Employee]`` 将返回 ``false`` ，且 ``p.asInstanceOf[Employee]`` 将返回 ``null`` 。
+
+如果 ``p`` 不是一个 ``Employee`` ，则 ``p.asInstanceOf[Employee]`` 将抛出异常。
+
+如果你想要测试 ``p`` 指向的是一个 ``Employee`` 对象但又不是其子类的话，可以使用：
 
 .. code-block:: scala
 	
-	trait Logger {
-    	def log(msg:String)
-	}
+	if (p.getClass == classOf[Employee])
 
-接下来定义特质 ``TimestampLogger`` 并继承重写 ``log`` 方法：
+不过与类型检查和转化相比，模式匹配通常是更好的选择。
 
 .. code-block:: scala
-
-	trait TimestampLogger extends Logger{
-    	abstract override def log(msg:String){
-        	super.log(new java.util.Date() + " " + msg)
-    	}
+	
+	p match{
+    	case s:Employee => ...
+    	case _ =>...
 	}
 
 
---------------
-特质中的字段
---------------
-
-特质中的字段可以是具体的，也可以是抽象的。如果给出了字段的初始值，那么该字段就是具体的。如果没有给出初始值，那么就是抽象的。抽象字段在具体的子类中必须被重写。重写的时候不需要使用 ``override`` 关键字。
 
 -------------
-特质构造顺序
+受保护字段
 -------------
 
-和类一样，特质也有构造器，由字段的初始化和其他特质体中的语句构成。
+如果字段或方法被声明为 	``protected`` ，则这样的成员可以被任何子类访问，但不能从其他位置看到。与Java不同的是，``protected`` 的成员对于类所属的包而言，是不可见的。
 
-构造器的执行顺序如下：
+---------------
+超类的构造
+---------------
 
-- 首先调用超类的构造器
+辅助构造器永远不能够直接调用超类的构造器，子类的辅助构造器最终都会调用主构造器，只有主构造器可以调用超类的构造器。
 
-- 特质构造器在超类构造器之后，类构造器之前执行
+scala类可以扩展Java类，这种情况下，它的主构造器必须调用Java超类的某一个构造方法。
 
-- 特质由左至右被构造
+-----------
+重写字段
+-----------
 
-- 每个特质中，父特质首先被构造
+注意以下限制：
 
-- 如果多个特质共有一个父特质，而该父特质已经被构造，则不会再次构造
+- ``def`` 只能重写另一个 ``def``
 
-- 所有特质构造完，子类被构造
+- ``val`` 只能重写另一个 ``val`` 或不带参数的 ``def``
 
-
--------------------
-初始化特质中的字段
--------------------
-
-特质不能有构造参数，每个特质都有一个无参数的构造器。
-
-初始化特质中的字段有两种方法：
-
-- 一是需要提前定义。
-
-.. code-block:: scala
-	
-	val act = new {
-
-    	val filename = "a.jpg"
-
-	} with SaveAccount with FileLogger
+- ``var`` 只能重写另一个抽象的 ``var``
 
 
-- 二是在FileLogger构造器中使用懒值：
+-----------
+匿名子类
+-----------
+
+
+和Java一样，你可以通过包含带有定义或者重写代码块的方式创建一个匿名子类。
 
 .. code-block:: scala
-	
-	trait FileLogger extends Logger{
-    	
-    	val filename:String
-    	
-    	lazy val out = new PrintStream(filename)
-    	
-    	def log(msg:String) { out.println(msg)}
+
+	val align = new Person("Fred"){
+    	def greeting = "hello"
 	}
 
 
-------------
-扩展类的特质
-------------
+--------
+抽象类
+--------
 
-特质也可以扩展类，这个类会自动成为所有混入该特质的超类。
-
-特质的超类也自动成为我们类的超类。
-
------------
-自身类型
------------
-
-当特质以以下代码开始定义时：
-
-.. code-block:: scala
-		
-		this: 类型 =>
-
-它便只能混入指定类型的子类
+和Java一样，可以使用 ``abstract`` 关键字定义一个不能被实例化的类。
 
 .. code-block:: scala
 	
-	trait LoggedException extends Logged{
-    	this:Exception =>
-        
-        def log(){log(getMessage()}
-	}	
+	abstract class Person(val name:String){
+    	def id:Int
+	}
 
-注意该特质并不扩展 ``Exception`` 类，而是有一个自身类型 ``Exception`` 。这意味着，它只能被混入 ``Exception`` 子类。
+但是在scala中，不像java，你不需要对抽象方法使用 ``abstract`` 关键字，你只是省去方法体。
+
+在子类中重写父类的抽象方法时，你不需要使用 ``override`` 关键字。
+
+-----------
+抽象字段
+-----------
+
+除了抽象方法之外，类还可以拥有抽象字段，抽象字段就是一个没有初始化值的字段。
+
+具体的子类必须提供具体的字段。和方法一样，在子类中重写超类的抽象字段时，不需要 ``override`` 关键字。
 
 
-在特质的方法中，我们可以调用该自身类型的任何方法。
+-------------
+scala继承层级
+-------------
 
+所有其他类都是 ``AnyRef`` 的子类， ``AnyRef`` 相当于Java中的 ``Object`` 类。
 
+``AnyVal`` 和 ``AnyRef`` 都扩展自 ``Any`` 类，而 ``Any`` 类是整个继承层级的根节点。
 
+``Null`` 类型的唯一实例就是 ``null`` 值，你可以额将 ``null`` 值赋值给任何引用，但不能赋值给值类型的应用。
+
+``Nothing`` 类型没有实例，它对于泛型结构时常有用。
+
+--------------
+对象相等性
+--------------
+
+在scala中， ``AnyRef`` 的 ``eq`` 方法检查两个引用是否指向同一个对象。 ``AnyRef`` 的 ``equals`` 方法调用 ``eq`` 。
 
 
 
