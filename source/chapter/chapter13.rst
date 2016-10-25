@@ -28,9 +28,41 @@ Scala支持可变集合和不可变集合。Scala优先使用不可变集合。
 列表
 ----
 
+列表与数组类似，所有成员的类型都相同，但是列表是不可变的，因此不能直接赋值。
+
+.. code-block:: scala
+
+	// List of Strings
+	val fruit: List[String] = List("apples", "oranges", "pears")
+	
+	// List of Integers
+	val nums: List[Int] = List(1, 2, 3, 4)
+	
+	// Empty List.
+	val empty: List[Nothing] = List()
+	
+	// Two dimensional list
+	val dim: List[List[Int]] =
+		List(
+			List(1, 0, 0),
+			list(0, 1, 0),
+			List(0, 0, 1)
+	)	
+
 在Scala中，列表要么是 ``Nil`` ，要么是一个 ``head`` 元素加 ``tail`` ，而 ``tail`` 又是一个列表。
 
 使用 ``::`` 操作符从给定的头到尾创建一个新列表。注意 ``::`` 是右结合的。
+
+.. code-block:: scala
+
+	// List of Strings
+	val fruit = "apples" :: ("oranges" :: ("pears" :: Nil))
+
+	// List of Integers
+	val nums = 1 :: (2 :: (3 :: (4 :: Nil)))
+	
+	// Empty List.
+	val empty = Nil
 
 --------
 可变列表
