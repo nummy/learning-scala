@@ -8,6 +8,13 @@
 
 scala中没有多重继承，scala提供特质而非接口，特质可以同时拥有具体方法和抽象方法，而类可以实现多个特质。
 
+.. code-block:: scala
+
+	trait Equal {
+		def isEqual(x: Any): Boolean
+		def isNotEqual(x: Any): Boolean = !isEqual(x)
+	}
+
 在重写特质的抽象方法时不需要使用 ``override`` 关键字。
 
 如果你需要不止一个特质，可以用with关键字来添加额外的特质。
