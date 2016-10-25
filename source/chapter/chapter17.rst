@@ -6,7 +6,7 @@
 异常的抛出和捕获
 ---------------
 
-Scala 也允许抛出异常：
+Scala中使用 ``throw`` 语句抛出异常：
 
 .. code-block:: scala
 
@@ -30,6 +30,8 @@ Scala 的 ``try/catch`` 是表达式（返回一个值），因此下面的代�
   } catch {
       case UnderAgeException(msg) => msg
   }
+
+此外，还可以使用 ``finally`` 语句。
 
 ---------------
 函数式的错误处理
