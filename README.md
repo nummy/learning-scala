@@ -1,6 +1,6 @@
 # scala 学习笔记
 
-托管于readthedoc [scala学习笔记](http://nummy-demo.readthedocs.io/zh_CN/latest/)
+托管于readthedoc, 链接地址《[scala学习笔记](http://nummy-demo.readthedocs.io/zh_CN/latest/)》
 
 [第一章 基础](https://github.com/nummy/learning-scala/blob/master/source/chapter/chapter01.rst)
 
