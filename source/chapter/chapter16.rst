@@ -101,17 +101,3 @@ scala注解可以是任何类型。
 ----------
 Java修饰符
 ----------
-
-
-| These lines are
-| broken exactly like in
-| the source file.
-
-=====  =====  =======
-A      B      A and B
-=====  =====  =======
-False  False  False
-True   False  False
-False  True   False
-True   True   True
-=====  =====  =======
