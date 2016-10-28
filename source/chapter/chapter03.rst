@@ -53,9 +53,13 @@
 格式化字符串
 -------------
 
-可以使用 ``printf`` 或者 ``format`` 来格式化字符串。
+可以使用 ``printf`` 或者 ``format`` 来格式化字符串。 ``String`` 类有一个等价类的方法， ``format()`` ，它返回一个 ``String`` 对象，而不是一个 ``PrintStream`` 对象。
 
-
+.. code-block:: scala
+	
+	scala > "%.2f".format(1212)
+	1212.00
+	
 ----------
 字符串插值
 ----------
