@@ -31,6 +31,7 @@ Contents:
    chapter/chapter17
    chapter/chapter18
    chapter/chapter19
+   chapter/chapter20
 
 Indices and tables
 ==================
