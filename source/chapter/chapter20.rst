@@ -30,4 +30,9 @@
 .. toctree::
     :maxdepth: 1
     
-    ./sub20/*
+    ./sub20/context
+    ./sub20/future
+    ./sub20/blocking
+    ./sub20/exception
+    ./sub20/promise
+    ./sub20/utility
