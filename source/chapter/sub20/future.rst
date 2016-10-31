@@ -299,4 +299,24 @@ Callback
 
 综上所述， ``Future`` 的组合器功能是纯函数式的，每种组合器都会返回一个与原 ``Future`` 相关的新 ``Future`` 对象。
 
+投影
+----
 
+为了确保 ``for`` 解构(for-comprehensions)能够返回异常， ``futures`` 也提供了投影(projections)。如果原 ``future`` 对象失败了，失败的投影(projection)会返回一个带有 ``Throwable`` 类型返回值的 ``future`` 对象。如果原 ``Future`` 成功了，失败的投影(projection)会抛出一个 ``NoSuchElementException`` 异常。下面就是一个在屏幕上打印出异常的例子：
+
+.. code-block:: scala
+  
+  val f = Future {
+   2 / 0
+  }
+  for (exc <- f.failed) println(exc)
+  
+下面的例子不会在屏幕上打印出任何东西：
+
+.. code-block:: scala
+  
+  val f = Future {
+   4 / 2
+  }
+  for (exc <- f.failed) println(exc)
+  
