@@ -295,5 +295,8 @@ Callback
   val h = f fallbackTo g
   Await.result(h, Duration.Zero) // evaluates to 5
 
+``andThen`` 会根据当前 ``future`` 的计算结果返回一个新的 ``future`` ，这样可以让回调顺序执行。
+
+综上所述， ``Future`` 的组合器功能是纯函数式的，每种组合器都会返回一个与原 ``Future`` 相关的新 ``Future`` 对象。
 
 
