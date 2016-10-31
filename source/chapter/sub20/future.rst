@@ -183,4 +183,117 @@ Callback
 
 - 一旦执行完，回调将从future对象中移除，这样更适合JVM的垃圾回收机制(GC)。
 
+函数组合与For表达式
+------------------
+
+使用回调函数有可能导致回调地狱，例如下面这个例子，假设我们通过API与货币交易系统交互，当有利可图的时候就购入美元：
+
+.. code-block:: scala
+  
+  val rateQuote = Future {
+   connection.getCurrentValue(USD)
+  }
+  rateQuote onSuccess { case quote =>
+    val purchase = Future {
+     if (isProfitable(quote)) connection.buy(amount, quote)
+     else throw new Exception("not profitable")
+   }
+  
+   purchase onSuccess {
+      case _ => println("Purchased " + amount + " USD")
+    }
+  }
+
+上面的代码能够正常运行，但是并不合适，主要原因如下：一是回调函数嵌套调用，可阅读性差；二是 ``purchase`` 变量在其它的代码的作用域中不可见；
+
+为了解决上述问题，Future提供了组合器combinators。最基础的就是 ``map`` ，它接收一个future对象， 然后创建一个新的future对象然后返回，它包含了成功计算的结果。你可以像理解容器(collections)的 ``map`` 一样来理解future的 ``map`` 。
+
+现在重写上面的代码：
+
+.. code-block:: scala
+
+  val rateQuote = Future {
+   connection.getCurrentValue(USD)
+  }
+  val purchase = rateQuote map { quote => 
+    if (isProfitable(quote)) connection.buy(amount, quote)
+    else throw new Exception("not profitable")
+  }
+  purchase onSuccess {
+    case _ => println("Purchased " + amount + " USD")
+  }
+
+通过使用 ``map`` 我们消除了一个回调，更重要的是消除了嵌套。
+
+如果 ``isProfitable`` 返回 ``false`` ， 结果导致异常抛出，也就没有值来进行映射，所以导致 ``purchase`` 抛出的异常与 ``rateQuote`` 的异常一致。
+
+总之，如果原 ``Future`` 的计算成功完成了，那么返回的 ``Future`` 将会使用原 ``Future`` 的映射值来完成计算。如果映射函数抛出了异常则 ``Future`` 也会带着该异常完成计算。如果原 ``Future`` 由于异常而计算失败，那么返回的 ``Future`` 也会包含相同的异常。这种异常的传导方式也同样适用于其他的组合器(combinators)。
+
+``Future`` 的设计目标之一就是让它们支持 ``for`` 表达式，``Future`` 还支持 ``flatMap`` , ``filter`` , ``foreach`` 等组合器。
+
+其中 ``flatMap`` 方法可以构造一个函数，它可以把值映射到一个姑且称为 ``g`` 的新 ``future`` ，然后返回一个随 ``g`` 的完成而完成的 ``Future`` 对象。
+
+假设我们现在需要交易美元和瑞士币，首先需要获取它们各自的报价，然后在这两个报价的基础上进行交易：
+
+.. code-block:: scala
+  
+  val usdQuote = Future { connection.getCurrentValue(USD) }
+  val chfQuote = Future { connection.getCurrentValue(CHF) }
+  val purchase = for {
+    usd <- usdQuote
+    chf <- chfQuote
+    if isProfitable(usd, chf)
+  } yield connection.buy(amount, chf)
+  purchase onSuccess {
+    case _ => println("Purchased " + amount + " CHF")
+  }
+
+上面的for表达式也可以转换成：
+
+.. code-block:: scala
+  
+  val purchase = usdQuote flatMap {
+    usd =>
+    chfQuote
+      .withFilter(chf => isProfitable(usd, chf))
+      .map(chf => connection.buy(amount, chf))
+  }
+
+``Future`` 还提供了 ``recover`` 方法来处理异常：
+
+比方说我们准备在 ``rateQuote`` 的基础上决定购入一定量的货币，那么 ``connection.buy`` 方法需要知道购入的数量和期望的报价值，最终完成购买的数量将会被返回。假如报价值偏偏在这个节骨眼儿改变了，那buy方法将会抛出一个 ``QuoteChangedExecption`` ，并且不会做任何交易。如果我们想让我们的 ``Future`` 对象返回0而不是抛出那个该死的异常，那我们需要使用 ``recover`` 组合器：
+
+.. code-block:: scala
+
+  val purchase: Future[Int] = rateQuote map {
+    quote => connection.buy(amount, quote)
+    } recover {
+    case QuoteChangedException() => 0
+  }
+
+``recover`` 能够创建一个新 ``future`` 对象，该对象当计算完成时持有和原 ``future`` 对象一样的值。
+
+.. code-block:: scala
+
+  Future (6 / 0) recover { case e: ArithmeticException => 0 } // result: 0
+  Future (6 / 0) recover { case e: NotFoundException   => 0 } // result: exception
+  Future (6 / 2) recover { case e: ArithmeticException => 0 } // result: 3
+
+``recoverWith`` 创建一个新的 ``future`` 对象，当原``future`` 计算成功时，新的 ``future`` 对象包含了成功的计算结果，如果失败或者异常，偏函数将会返回造成原 ``future`` 失败的相同的 ``Throwable`` 异常， 如果此时 ``Throwable`` 又被映射给了别的 ``future`` ，那么新 ``Future`` 就会完成并返回这个 ``future`` 的结果。 ``recoverWith`` 同 ``recover`` 的关系跟 ``flatMap`` 和 ``map`` 之间的关系很像。
+
+.. code-block:: scala
+  
+  val f = Future { Int.MaxValue }
+  Future (6 / 0) recoverWith { case e: ArithmeticException => f } // result: Int.MaxValue
+  
+``fallbackTo`` 连接两个 ``future`` 对象， 如果第一个执行成功，返回第一个的结果；如果第一个失败，继续执行第二个，并返回第二个的结果；如果第一、二个都失败了，则返回第一个计算结果。
+
+.. code-block:: scala
+
+  val f = Future { sys.error("failed") }
+  val g = Future { 5 }
+  val h = f fallbackTo g
+  Await.result(h, Duration.Zero) // evaluates to 5
+
+
 
