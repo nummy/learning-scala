@@ -118,27 +118,69 @@ Callback
 如果任务失败，即 ``Future`` 抛出异常，则执行 ``onFailure`` 回调函数。
 
 由于偏函数具有 ``isDefinedAt`` 方法， ``onFailure`` 回调函数只有在特定的 ``Throwable`` 类型对象下会触发。下面例子中的 ``onFailure`` 回调永远不会被触发：
-```
-val f = Future {
-  2 / 0
-}
-f onFailure {
-  case npe: NullPointerException =>
-    println("I'd be amazed if this printed out.")
-}
-```
+
+.. code-block:: scala
+
+  val f = Future {
+    2 / 0
+  }
+  f onFailure {
+    case npe: NullPointerException =>
+      println("I'd be amazed if this printed out.")
+  }
+
 回到前面查找关键字的例子，我们可能想在屏幕上打印出此关键字的位置：
-```
-val firstOccurrence: Future[Int] = Future {
-  val source = scala.io.Source.fromFile("myText.txt")
-  source.toSeq.indexOfSlice("myKeyword")
-}
-firstOccurrence onSuccess {
-  case idx => println("The keyword first appears at position: " + idx)
-}
-firstOccurrence onFailure {
-  case t => println("Could not process file: " + t.getMessage)
-}
-```
-回调函数`onComplete`、`onSuccess`、`onFailure`的返回结果为Unit类型。
+
+.. code-block:: scala
+
+  val firstOccurrence: Future[Int] = Future {
+    val source = scala.io.Source.fromFile("myText.txt")
+    source.toSeq.indexOfSlice("myKeyword")
+  }
+  firstOccurrence onSuccess {
+    case idx => println("The keyword first appears at position: " + idx)
+  }
+  firstOccurrence onFailure {
+    case t => println("Could not process file: " + t.getMessage)
+  }
+
+回调函数 ``onComplete`` 、 ``onSuccess`` 、 ``onFailure`` 的返回结果为 ``Unit`` 类型，也就是说这些函数并不支持链式调用。
+
+注意回调函数并不一定是由返回计算结果的线程调用，也不一定是由创建回调函数的线程来调用，只能说是由某个线程来调用。
+
+而且回调函数的执行顺序不是固定的，实际上，回调函数不一定是顺序调用，也可能是并发执行的。
+
+看下面的例子：
+
+.. code-block:: scala
+
+  @volatile var totalA = 0
+  val text = Future {
+    "na" * 16 + "BATMAN!!!"
+  }
+  text onSuccess {
+    case txt => totalA += txt.count(_ == 'a')
+  }
+  text onSuccess {
+    case txt => totalA += txt.count(_ == 'A')
+  }
+
+上面的例子中，两个回调函数如果是顺序执行的话，text的结果为18，但是也可能并发执行，这时结果可能为16或者2。
+
+回调函数的相关规则：
+
+- ``onComplete`` 不管结果是否成功或者失败都会执行
+
+- ``onSuccess`` 只有成功才会执行
+
+- ``onFailure`` 只有失败才会执行
+
+- 回调的执行顺序不是固定的，除非使用自定义的 ``ExecutionContext``
+
+- 在一些回调抛出异常的情况下，其他回调的执行不受影响
+
+- 在某些情况下一些回调可能永远不能结束，导致其他回调不会执行，这时需要使用阻塞回调
+
+- 一旦执行完，回调将从future对象中移除，这样更适合JVM的垃圾回收机制(GC)。
+
 
