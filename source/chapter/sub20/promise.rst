@@ -1,5 +1,5 @@
 Promise
-========
+=======
 
 前面我们介绍了通过 ``future`` 方法来创建 ``Future`` 对象， 实际上，``futures`` 还可以通过 ``Promise`` 来创建。
 
@@ -64,4 +64,49 @@ Promises也能通过一个 ``complete`` 方法来实现，返回结果为 ``Try[
   p.future onSuccess {
     case x => println(x)
   }
+
+工具库
+======
+
+为了简化并发开发过程中的时间处理，``scala.concurrent`` 库提供了 ``Duration`` 类。
+
+``Duration`` 代表一段时间范围，它既可以代表有限时间，也可以代表无限时间。有限时间通过 ``FiniteDuration`` 表示，无限时间只有两种情况 ``Duration.Inf`` 和 ``Duration.MinusInf`` 。
+
+Duration库还提供了其他一些子类用于隐式参数转换。
+
+Duration类包括以下方法：
+
+- 时间单位转换函数(toNanos, toMicros, toSeconds, toMinutes, toHours, toDays, toUnits等)
+
+- 时间大小比较函数(<, <=, >, >=)
+
+- 算术运算(+,-,*,/, unary_-)
+
+- 获取两个Duration中最大值max或者最小值min
+
+- 判断Duration对象是否无限
+
+Duration可以通过以下方法实例化：
+
+- 通过隐式参数转换，从Int或Long类型转换为Duration
+
+- 通过一个Long类型的参数，以及一个 ``java.util.concurrent.TimeUnit`` 类型的参数构建， 例如：``val d = Duration(100, MILLISECONDS)``。
+
+- 通过字符串构建，例如 ``val d = Duration("1.2 µs")``
+
+Duration还提供了unapply方法，所以它支持模式匹配：
+
+.. code-block:: scala
+  
+  import scala.concurrent.duration._
+  import java.util.concurrent.TimeUnit._
+ 
+  // instantiation
+  val d1 = Duration(100, MILLISECONDS) // from Long and TimeUnit
+  val d2 = Duration(100, "millis") // from Long and String
+  val d3 = 100 millis // implicitly from Long, Int or Double
+  val d4 = Duration("1.2 µs") // from String
+  // pattern matching
+  val Duration(length, unit) = 5 millis
+
 
