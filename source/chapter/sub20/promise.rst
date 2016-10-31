@@ -33,3 +33,35 @@ Promise
 
 正如前面提到的， ``promises`` 具有单赋值语义。因此，它们仅能被实现一次。在一个已经计算完成的 ``promise`` 或者 ``failed`` 的 ``promise`` 
 上调用 ``success`` 方法将会抛出一个 ``IllegalStateException`` 异常。
+
+下面这个例子处理了Promise失败的情况：
+
+.. code-block:: scala
+  
+  val p = promise[T]
+  val f = p.future
+  val producer = Future {
+    val r = someComputation
+    if (isInvalid(r))
+      p failure (new IllegalStateException)
+    else {
+      val q = doSomeMoreComputation(r)
+      p success q
+    }
+  }
+  
+Promises也能通过一个 ``complete`` 方法来实现，返回结果为 ``Try[T]`` 类型，这个值要么是一个类型为 ``Failure[Throwable]`` 的失败的结果值，要么是一个类型为 ``Success[T]`` 的成功的结果值。
+
+类似 ``success`` 方法，在一个已经完成(completed)的 ``promise`` 对象上调用 ``failure`` 方法和 ``complete`` 方法同样会抛出一个 ``IllegalStateException`` 异常。
+
+``completeWith`` 方法将用另外一个 ``future`` 完成 ``promise`` 计算。当该 ``future`` 结束的时候，该 ``promise`` 对象得到那个 ``future``对象同样的值，如下的程序将打印1：
+
+.. code-block:: scala
+
+  val f = Future { 1 }
+  val p = promise[Int]
+  p completeWith f
+  p.future onSuccess {
+    case x => println(x)
+  }
+
