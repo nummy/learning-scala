@@ -67,13 +67,13 @@ Scala没有 ``switch`` 语句，但是它有一个更强大的模式匹配机制
 
 使用 ``printf`` 格式化输出。
 
-使用 ``readLine`` 从控制台读取一行输入，如果是读取数字， ``Boolean`` 或者字符串，可以使用 ``readInt`` ,  ``readDouble`` , ``readByte`` ,  ``readShort`` , ``readLong``, ``readFloat``, ``readBoolean``或者 ``readChar``。与其他方法不同，``readLine``带一个参数作为提示字符串。
+使用 ``readLine`` 从控制台读取一行输入，如果是读取数字， ``Boolean`` 或者字符串，可以使用 ``readInt`` ,  ``readDouble`` , ``readByte`` ,  ``readShort`` , ``readLong``, ``readFloat``, ``readBoolean``或者 ``readChar``。与其他方法不同，``readLine`` 带一个参数作为提示字符串。
 
 -----
 循环
 -----
 
-scala支持 ``while`` 循环和 ``for`` 循环， ``while``循环与Java的 ``while`` 一样， ``for`` 循环语法如下：
+scala支持 ``while`` 循环和 ``for`` 循环， ``while`` 循环与Java的 ``while``  一样， ``for`` 循环语法如下：
 
 .. code-block:: scala
 
@@ -103,7 +103,7 @@ scala支持 ``while`` 循环和 ``for`` 循环， ``while``循环与Java的 ``wh
 
 	for( i <- 1 to 3; from = 4-i; j <- from to 3)  print ((10*i+j)+ " ")
 
-如果 ```for`` 循环的循环体以 ``yield`` 开始，则该循环会构造出一个集合，每次迭代出集合中的一个值：
+如果 ``for`` 循环的循环体以 ``yield`` 开始，则该循环会构造出一个集合，每次迭代出集合中的一个值：
 
 .. code-block:: scala
 
@@ -121,7 +121,7 @@ scala支持 ``while`` 循环和 ``for`` 循环， ``while``循环与Java的 ``wh
 
 	def abs(x:Double) = if (x>0) x else -x
 
-必须给出所有参数的类型，不过，只要函数不是递归的，就不需要指定返回类型。Scala编译器可以通过 ``=``右侧的表达式推断出返回类型。
+必须给出所有参数的类型，不过，只要函数不是递归的，就不需要指定返回类型。Scala编译器可以通过 ``=`` 右侧的表达式推断出返回类型。
 
 如果函数体需要多个表达式完成，可以使用代码块，块中最后一个表达式的值就是函数的返回值。
 
