@@ -17,7 +17,7 @@ scala中没有多重继承，scala提供特质而非接口，特质可以同时�
 
 在重写特质的抽象方法时不需要使用 ``override`` 关键字。
 
-如果你需要不止一个特质，可以用with关键字来添加额外的特质。
+如果你需要不止一个特质，可以用 ``with`` 关键字来添加额外的特质。
 
 所有Java接口都可以作为scala特质来使用。
 
@@ -48,7 +48,7 @@ scala中没有多重继承，scala提供特质而非接口，特质可以同时�
 .. code-block:: scala
 	
 	trait Logger {
-    	def log(msg:String)
+    		def log(msg:String)
 	}
 
 接下来定义特质 ``TimestampLogger`` 并继承重写 ``log`` 方法：
@@ -56,9 +56,9 @@ scala中没有多重继承，scala提供特质而非接口，特质可以同时�
 .. code-block:: scala
 
 	trait TimestampLogger extends Logger{
-    	abstract override def log(msg:String){
-        	super.log(new java.util.Date() + " " + msg)
-    	}
+    		abstract override def log(msg:String){
+        		super.log(new java.util.Date() + " " + msg)
+    		}
 	}
 
 
@@ -97,28 +97,28 @@ scala中没有多重继承，scala提供特质而非接口，特质可以同时�
 
 初始化特质中的字段有两种方法：
 
-- 一是需要提前定义。
+- 提前定义。
 
 .. code-block:: scala
 	
 	val act = new {
 
-    	val filename = "a.jpg"
+    		val filename = "a.jpg"
 
 	} with SaveAccount with FileLogger
 
 
-- 二是在FileLogger构造器中使用懒值：
+- 在FileLogger构造器中使用懒值：
 
 .. code-block:: scala
 	
 	trait FileLogger extends Logger{
     	
-    	val filename:String
+    		val filename:String
     	
-    	lazy val out = new PrintStream(filename)
+    		lazy val out = new PrintStream(filename)
     	
-    	def log(msg:String) { out.println(msg)}
+    		def log(msg:String) { out.println(msg)}
 	}
 
 
@@ -145,9 +145,9 @@ scala中没有多重继承，scala提供特质而非接口，特质可以同时�
 .. code-block:: scala
 	
 	trait LoggedException extends Logged{
-    	this:Exception =>
+    		this:Exception =>
         
-        def log(){log(getMessage()}
+        	def log(){log(getMessage()}
 	}	
 
 注意该特质并不扩展 ``Exception`` 类，而是有一个自身类型 ``Exception`` 。这意味着，它只能被混入 ``Exception`` 子类。
