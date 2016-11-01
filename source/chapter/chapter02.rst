@@ -6,7 +6,7 @@
 条件表达式
 -----------
 
-scala的 ``if/esle`` 语法结构与Java一样，但是在scala中 ``if/else`` 表达式有值，这个值就是跟在 ``if`` 或 ``else``之后表达式的值。
+scala的 ``if/esle`` 语法结构与Java一样，但是在scala中 ``if/else`` 表达式有值，这个值就是跟在 ``if`` 或 ``else`` 之后表达式的值。
 
 我们可以将 ``if/else`` 表达式的值赋予给变量：
 
