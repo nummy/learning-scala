@@ -67,7 +67,7 @@ Scala没有 ``switch`` 语句，但是它有一个更强大的模式匹配机制
 
 使用 ``printf`` 格式化输出。
 
-使用 ``readLine`` 从控制台读取一行输入，如果是读取数字， ``Boolean`` 或者字符串，可以使用 ``readInt`` ,  ``readDouble`` , ``readByte`` ,  ``readShort`` , ``readLong``, ``readFloat``, ``readBoolean``或者 ``readChar``。与其他方法不同，``readLine`` 带一个参数作为提示字符串。
+使用 ``readLine`` 从控制台读取一行输入，如果是读取数字， ``Boolean`` 或者字符串，可以使用 ``readInt`` ,  ``readDouble`` , ``readByte`` ,  ``readShort`` , ``readLong``, ``readFloat``, ``readBoolean`` 或者 ``readChar``。与其他方法不同，``readLine`` 带一个参数作为提示字符串。
 
 -----
 循环
