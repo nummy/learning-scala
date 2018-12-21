@@ -89,13 +89,13 @@ scala支持 ``while`` 循环和 ``for`` 循环， ``while`` 循环与Java的 ``w
 
 .. code-block:: scala
 
-	for(i <-1 to 3, j <- 1 to 3) print ((10*i+j)+ " ")
+	for(i <-1 to 3; j <- 1 to 3) print ((10*i+j)+ " ")
 
 每个生成器还可以带过滤条件，以 ``if`` 开头的 ``Boolean`` 表达式。
 
 .. code-block:: scala
 	
-	for(i <-1 to 3, j <- 1 to 3 if i != j) print ((10*i+j)+ " ")
+	for(i <-1 to 3; j <- 1 to 3 if i != j) print ((10*i+j)+ " ")
 
 还可以使用任意多的定义，引入可以在循环中使用的变量：
 
